@@ -56,4 +56,4 @@ POINTING_DEVICE_ENABLE = yes
 CONSOLE_ENABLE = yes
 COMMAND_ENABLE = yes
 
-#SRC += trackball.c
+SRC += trackball.c
