@@ -18,11 +18,9 @@
 #include <avr/pgmspace.h>
 #include <print.h>
 #include "pointing_device.h"
-
+#include <debug.h>
 
 #define SENSOR_CS B6
-
-#define CPI 1200
 
 static const uint8_t MOTION = 0x02;
 static const uint8_t DELTA_X_L = 0x03;
@@ -250,6 +248,7 @@ static const unsigned char firmware_data[] PROGMEM = {
 0xa2, 0x99, 0x24, 0x9c, 0xd7, 0x8f, 0xdb, 0x55, 0xb5, 0x3e };
 
 
+
 void adnsComBegin(void) { writePinLow(SENSOR_CS); }
 
 void adnsComEnd(void) { writePinHigh(SENSOR_CS); }
@@ -288,9 +287,10 @@ void adnsWriteReg(uint8_t reg_addr, uint8_t data) {
 
 void startUp(void) {
 	 if (debug_enable) {
-        dprintf("Initialising PMW3360");
+        dprintf("Initialising ADNS9800");
     }
- 
+	
+
 
     // Hard reset. Start by ensuring that the serial port is reset.
     adnsComEnd();
@@ -310,7 +310,7 @@ void startUp(void) {
 
     
     if (debug_enable) {
-        dprintf("Uploading firmware to PMW3360");
+        dprintf("Uploading firmware to ADNS9800");
     }
     
 
@@ -342,7 +342,7 @@ void startUp(void) {
 
   
      if (debug_enable) {
-        dprintf("Firmware successfully written to PMW3360");
+        dprintf("Firmware successfully written to ADNS9800");
     }
     
 
@@ -354,20 +354,20 @@ void startUp(void) {
 
     
     if (debug_enable) {
-        dprintf("PMW3360 successfully initialized");
+        dprintf("ADNS9800 successfully initialized");
     }
 }		
 
-void matrix_init_kb(void) {
-	
-	matrix_init_user();
-	
+
+void keyboard_pre_init_kb(void) {
+		
 	setPinOutput(SENSOR_CS);
 
-    SPI_Init(SPI_SPEED_FCPU_DIV_16 | SPI_SCK_LEAD_FALLING | SPI_SAMPLE_TRAILING | SPI_ORDER_MSB_FIRST | SPI_MODE_MASTER);
-   
+	SPI_Init(SPI_SPEED_FCPU_DIV_8 | SPI_SCK_LEAD_FALLING | SPI_SAMPLE_TRAILING | SPI_ORDER_MSB_FIRST | SPI_MODE_MASTER);
+	
 	startUp();
-    
+	
+	keyboard_pre_init_user();
 }
 
 void pointing_device_task(void){
@@ -394,3 +394,4 @@ void pointing_device_task(void){
 	pointing_device_send();
 
 }
+
