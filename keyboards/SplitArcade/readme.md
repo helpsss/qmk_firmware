@@ -1,6 +1,6 @@
 # Split Arcade
 
-![https://imgur.com/KGG4XAk]
+https://imgur.com/KGG4XAk
 
 An handwired dactyl manuform with a trackball on the right thumb cluster.
 
