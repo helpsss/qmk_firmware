@@ -19,5 +19,3 @@
 #include "quantum.h"
 #include "../../lib/lufa/LUFA/Drivers/Peripheral/SPI.h"
 
-
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
