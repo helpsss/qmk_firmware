@@ -23,8 +23,6 @@
 #define _NUM 2
 #define _SYM 3
 #define _MOUSE 4
-#define _ACC 5
-#define _EMOJI 6
 
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
