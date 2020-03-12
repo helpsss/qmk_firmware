@@ -14,11 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "trackball.h"
-#include <LUFA/Drivers/Peripheral/SPI.h>
-#include <avr/pgmspace.h>
-#include <print.h>
 #include "pointing_device.h"
-#include <debug.h>
+#include "../../lib/lufa/LUFA/Drivers/Peripheral/SPI.h"
+#include <avr/pgmspace.h>
 
 #define SENSOR_CS B6
 
@@ -38,7 +36,10 @@ static const uint8_t MOTION_BURST = 0x50;
 static const uint8_t SROM_LOAD_BURST = 0x62;
 static const uint8_t LASER_CTRL = 0x20;
 
-const uint16_t firmware_length = 3070;
+int8_t cpi;
+int8_t newCPI;
+
+const unsigned short firmware_length = 3070;
 
 static const unsigned char firmware_data[] PROGMEM = {
 0x03, 0xa6, 0x68, 0x1e, 0x7d, 0x10, 0x7e, 0x7e, 0x5f, 0x1c, 0xb8, 0xf2, 0x47, 0x0c, 0x7b,
@@ -277,48 +278,34 @@ void adnsWriteReg(uint8_t reg_addr, uint8_t data) {
     SPI_TransferByte(reg_addr | 0x80);
     SPI_TransferByte(data);
 
-    // tSCLK-SENSOR_CS for write operation
-    wait_us(20);
+    wait_us(20); // tSCLK-SENSOR_CS for write operation
     adnsComEnd();
-    // tSWW/tSWR (=120us) minus tSCLK-SENSOR_CS.
-    // Could be shortened, but this looks like a safe lower-bound.
-    wait_us(100);
+    wait_us(100);  // tSWW/tSWR (=120us) minus tSCLK-SENSOR_CS.
 }
 
-void startUp(void) {
-	 if (debug_enable) {
-        dprintf("Initialising ADNS9800");
-    }
-	
+
+__attribute__((weak)) void RES_UP(void) {
+
+cpi = adnsReadReg(CONFIG1);
+newCPI = cpi + 0x01;
+adnsWriteReg(CONFIG1, newCPI);
+
+}
+
+__attribute__((weak)) void RES_DOWN(void) {
+
+cpi = adnsReadReg(CONFIG1);
+newCPI = cpi - 0x01;
+adnsWriteReg(CONFIG1, newCPI);
+
+}
 
 
-    // Hard reset. Start by ensuring that the serial port is reset.
-    adnsComEnd();
-    adnsComBegin();
-    adnsComEnd();
+void firmware_upload(void) {
+     
+    adnsWriteReg(CONFIG4, 0x02); // set the CONFIG4 register in 3k firmware mode
 
-    // Force a reset of the ADNS9800.
-    adnsWriteReg(POWER_UP_RESET, 0x5a);
-    wait_ms(50);
-
-    // Read registers 0x02 through 0x06 (and discard the data)
-    adnsReadReg(MOTION);
-    adnsReadReg(DELTA_X_L);
-    adnsReadReg(DELTA_X_H);
-    adnsReadReg(DELTA_Y_L);
-    adnsReadReg(DELTA_Y_H);
-
-    
-    if (debug_enable) {
-        dprintf("Uploading firmware to ADNS9800");
-    }
-    
-
-    // set the CONFIG4 register in 3k firmware mode
-    adnsWriteReg(CONFIG4, 0x02);
-
-    // write 0x1d in SROM_enable reg for initializing
-    adnsWriteReg(SROM_ENABLE, 0x1d);
+    adnsWriteReg(SROM_ENABLE, 0x1d);  // write 0x1d in SROM_enable reg for initializing
 
     // wait for more than one frame period
     // assume that the frame rate is as low as 100fps, even if it should never be that low
@@ -333,18 +320,32 @@ void startUp(void) {
     wait_us(15);
 
     unsigned char c;
-    for (uint8_t i = 0; i < (sizeof(firmware_data) / sizeof(char)); i++) {
+    for (uint16_t i = 0; i < firmware_length; i++) {
         c = (unsigned char)pgm_read_byte(firmware_data + i);
         SPI_TransferByte(c);
         wait_us(15);
 	}
 	adnsComEnd();
+	
+}
 
-  
-     if (debug_enable) {
-        dprintf("Firmware successfully written to ADNS9800");
-    }
-    
+void startUp(void) {
+	
+	// Hard reset. Start by ensuring that the serial port is reset.
+    adnsComEnd();
+    adnsComBegin();
+    adnsComEnd();
+	adnsWriteReg(POWER_UP_RESET, 0x5a); // Force a reset of the ADNS9800.
+    wait_ms(50);
+
+    // Read registers 0x02 through 0x06 (and discard the data)
+    adnsReadReg(MOTION);
+    adnsReadReg(DELTA_X_L);
+    adnsReadReg(DELTA_X_H);
+    adnsReadReg(DELTA_Y_L);
+    adnsReadReg(DELTA_Y_H);
+
+	firmware_upload();
 
     wait_ms(10);
 	uint8_t LASER = adnsReadReg(LASER_CTRL);
@@ -352,22 +353,17 @@ void startUp(void) {
     adnsWriteReg(CONFIG1, 0x12);
     wait_ms(1);
 
-    
-    if (debug_enable) {
-        dprintf("ADNS9800 successfully initialized");
-    }
-}		
+ }
 
 
-void keyboard_pre_init_kb(void) {
-		
+void pointing_device_init(void) {
+	
 	setPinOutput(SENSOR_CS);
 
 	SPI_Init(SPI_SPEED_FCPU_DIV_8 | SPI_SCK_LEAD_FALLING | SPI_SAMPLE_TRAILING | SPI_ORDER_MSB_FIRST | SPI_MODE_MASTER);
 	
 	startUp();
 	
-	keyboard_pre_init_user();
 }
 
 void pointing_device_task(void){
@@ -379,14 +375,12 @@ void pointing_device_task(void){
   int8_t dx, dy;
 
 	dx = adnsReadReg(DELTA_X_L);
-	uprintf("X value %s", dx);
 	
 	dy = adnsReadReg(DELTA_Y_L);
-	uprintf("Y value %s", dy);
 	
 	report_mouse_t currentReport = pointing_device_get_report();
 
-	currentReport.x = dx;
+	currentReport.x = -dx;
 	currentReport.y = dy;
 	
 	pointing_device_set_report(currentReport);
@@ -394,4 +388,3 @@ void pointing_device_task(void){
 	pointing_device_send();
 
 }
-
