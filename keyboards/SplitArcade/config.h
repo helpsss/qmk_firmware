@@ -27,12 +27,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT         SplitArcade
 #define DESCRIPTION     A custom keyboard
 
+/* QMK Bootloader */
+
+
 /* key matrix size */
 #define MATRIX_ROWS 8
 #define MATRIX_COLS 6
 
 #define MATRIX_ROW_PINS { D2, D1, D4, C6 }
-#define MATRIX_COL_PINS { D7, E6, B4, F4, F5, F6 }
+#define MATRIX_COL_PINS { F6, F5, F4, B4, E6, D7 }
 
 
 /* COL2ROW, ROW2COL*/
