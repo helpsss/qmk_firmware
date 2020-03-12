@@ -18,4 +18,8 @@
 #include "pointing_device.h"
 #include "quantum.h"
 #include "../../lib/lufa/LUFA/Drivers/Peripheral/SPI.h"
+#include "report.h"
+#include <util/delay.h>
 
+void RES_UP(void);
+void RES_DOWN(void);
