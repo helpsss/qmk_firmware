@@ -20,7 +20,6 @@
 
 #include "quantum.h"
 #include "pointing_device.h"
-#include "quantum.h"
 #include "../../lib/lufa/LUFA/Drivers/Peripheral/SPI.h"
 
 
