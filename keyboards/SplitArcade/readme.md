@@ -32,6 +32,7 @@ M3 10mm screws x12
 
 M3 threaded inserts (https://www.amazon.com/a16041800ux0827-Cylindrical-Knurled-Threaded-Embedded/dp/B01IZ1RN0A/ref=sxin_0_ac_d_pm?ac_md=2-1-QmV0d2VlbiAkNSBhbmQgJDEw-ac_d_pm&cv_ct_cx=m3+threaded+insert&keywords=m3+threaded+insert&pd_rd_i=B01IZ1RN0A&pd_rd_r=efb5573c-8f61-487a-bfdb-1274b85fa5ab&pd_rd_w=ImgkO&pd_rd_wg=CMHBN&pf_rd_p=0e223c60-bcf8-4663-98f3-da892fbd4372&pf_rd_r=96KZT8A9GJVP3WKBPYKZ&psc=1&qid=1585358873&sr=1-2-22d05c05-1231-4126-b7c4-3e7a9c0027d0)
 
+Si3N4 3mm balls (https://it.aliexpress.com/af/si3n4-bearings.html?d=y&origin=n&SearchText=si3n4+bearings&catId=0&initiative_id=AS_20200327174409) / these are needed to help the trackball glide inside its slot
 
 
 Here's the project wiring:
@@ -39,6 +40,7 @@ Here's the project wiring:
 ![wiring](https://i.imgur.com/DlmHwyQ.png)
 
 
+in the stl folder you'll find the 3d models for the plates and the bases. 
 
 ------
 
