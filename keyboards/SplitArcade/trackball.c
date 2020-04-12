@@ -283,24 +283,6 @@ void adnsWriteReg(uint8_t reg_addr, uint8_t data) {
     wait_us(100);  // tSWW/tSWR (=120us) minus tSCLK-SENSOR_CS.
 }
 
-
-__attribute__((weak)) void RES_UP(void) {
-
-cpi = adnsReadReg(CONFIG1);
-newCPI = cpi + 0x01;
-adnsWriteReg(CONFIG1, newCPI);
-
-}
-
-__attribute__((weak)) void RES_DOWN(void) {
-
-cpi = adnsReadReg(CONFIG1);
-newCPI = cpi - 0x01;
-adnsWriteReg(CONFIG1, newCPI);
-
-}
-
-
 void firmware_upload(void) {
      
     adnsWriteReg(CONFIG4, 0x02); // set the CONFIG4 register in 3k firmware mode
@@ -355,6 +337,33 @@ void startUp(void) {
 
  }
 
+__attribute__((weak)) void RES_UP(void) {
+
+cpi = adnsReadReg(CONFIG1);
+newCPI = cpi + 0x01;
+adnsWriteReg(CONFIG1, newCPI);
+
+}
+
+__attribute__((weak)) void RES_DOWN(void) {
+
+cpi = adnsReadReg(CONFIG1);
+newCPI = cpi - 0x01;
+adnsWriteReg(CONFIG1, newCPI);
+
+}
+
+int16_t convertDeltaToInt(uint8_t high, uint8_t low){
+
+    // join bytes into twos compliment
+    uint16_t twos_comp = (high << 8) | low;
+
+    // convert twos comp to int
+    if (twos_comp & 0x8000)
+        return -1 * ((twos_comp ^ 0xffff) + 1);
+
+    return twos_comp;
+}
 
 void pointing_device_init(void) {
 	
@@ -367,16 +376,10 @@ void pointing_device_init(void) {
 }
 
 void pointing_device_task(void){
-  //uint8_t motion = adnsReadReg(MOTION);
-
-  // Motion has occurred on the trackpad
-  //if (motion > 127) {
-
-  int8_t dx, dy;
-
-	dx = adnsReadReg(DELTA_X_L);
 	
-	dy = adnsReadReg(DELTA_Y_L);
+	dx = convertDeltaToInt(adnsReadReg(DELTA_X_H), adnsReadReg(DELTA_X_L));
+	
+	dy = convertDeltaToInt(adnsReadReg(DELTA_Y_H), adnsReadReg(DELTA_Y_L));
 	
 	report_mouse_t currentReport = pointing_device_get_report();
 
@@ -386,5 +389,4 @@ void pointing_device_task(void){
 	pointing_device_set_report(currentReport);
     
 	pointing_device_send();
-
 }
