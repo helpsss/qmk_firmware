@@ -104,7 +104,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  //+------------+------------+------------+------------+------------+------------+                                                         +------------+------------+------------+------------+------------+------------+// 
       _______,	   _______,     _______, 	 _______,     _______, 	   _______, 	                                                           _______,     _______,     _______,     _______,     _______,     _______, \
  //+------------+------------+------------+------------+------------+------------+------------+------------+     +------------+------------+------------+------------+------------+------------+------------+------------+//  
-                                _______,     _______, 	  _______, 	   _______,     MO(_NUM), 	 _______, 	        _______,      _______,     _______,     _______,     _______,     _______  \
+                                _______,     _______, 	  _______, 	   _______,     _______, 	 _______, 	        _______,      _______,     _______,     _______,     _______,     _______  \
                            //+------------+------------+------------+------------+------------+------------+     +------------+------------+------------+------------+------------+------------+//	
 ),
 
@@ -121,9 +121,39 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 };
 
+void on_mouse_button(uint8_t mouse_button, bool pressed) {
+    report_mouse_t report = pointing_device_get_report();
+
+    if(pressed)
+        report.buttons |= mouse_button;
+    else
+        report.buttons &= ~mouse_button;
+
+    pointing_device_set_report(report);
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-    
+    case KC_BTN1:
+            on_mouse_button(MOUSE_BTN1, record->event.pressed);
+            return false;
+
+    case KC_BTN2:
+            on_mouse_button(MOUSE_BTN2, record->event.pressed);
+            return false;
+
+    case KC_BTN3:
+            on_mouse_button(MOUSE_BTN3, record->event.pressed);
+            return false;
+
+    case KC_BTN4:
+            on_mouse_button(MOUSE_BTN4, record->event.pressed);
+            return false;
+
+    case KC_BTN5:
+            on_mouse_button(MOUSE_BTN5, record->event.pressed);
+            return false;
+          
 	case DPI_DOWN:
 		if (record->event.pressed) {
 			RES_DOWN();
@@ -132,7 +162,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		}else{
 		}
 		break;
-		case DPI_UP:
+          
+	case DPI_UP:
 		if (record->event.pressed) {
 			RES_UP();
 			rgblight_sethsv_at((RES_hue+5),128, 128, 9);
